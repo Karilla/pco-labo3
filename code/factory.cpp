@@ -73,7 +73,7 @@ void Factory::run() {
     }
     interface->consoleAppendText(uniqueId, "[START] Factory routine");
 
-    while (true /* TODO terminaison*/) {
+    while (!PcoThread::thisThread()->stopRequested() /* TODO terminaison*/) {
         if (verifyResources()) {
             buildItem();
         } else {
@@ -91,7 +91,15 @@ std::map<ItemType, int> Factory::getItemsForSale() {
 
 int Factory::trade(ItemType it, int qty) {
     // TODO
-    return 0;
+    if(this->getItemsForSale()[it] < qty or
+       qty < 0 or
+       this->getItemsForSale().find(it) == this->getItemsForSale().end()){
+        return 0;
+    }
+    int price = getCostPerUnit(it) * qty;
+    this->money += price;
+    this->getItemsForSale()[it] -= qty;
+    return price;
 }
 
 int Factory::getAmountPaidToWorkers() {

@@ -1,6 +1,7 @@
 #include "extractor.h"
 #include "costs.h"
 #include <pcosynchro/pcothread.h>
+#include <map>
 
 WindowInterface* Extractor::interface = nullptr;
 
@@ -20,14 +21,21 @@ std::map<ItemType, int> Extractor::getItemsForSale() {
 
 int Extractor::trade(ItemType it, int qty) {
     // TODO
-
-    return 0;
+    if(this->getItemsForSale()[it] < qty or
+       qty < 0 or
+       this->getItemsForSale().find(it) == this->getItemsForSale().end()){
+        return 0;
+    }
+    int price = getCostPerUnit(it) * qty;
+    this->money += price;
+    this->getItemsForSale()[it] -= qty;
+    return price;
 }
 
 void Extractor::run() {
     interface->consoleAppendText(uniqueId, "[START] Mine routine");
 
-    while (true /* TODO terminaison*/) {
+    while (!PcoThread::thisThread()->stopRequested() /* TODO terminaison*/) {
         /* TODO concurrence */
 
         int minerCost = getEmployeeSalary(getEmployeeThatProduces(resourceExtracted));

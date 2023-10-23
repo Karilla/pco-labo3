@@ -48,11 +48,28 @@ bool Factory::verifyResources() {
 void Factory::buildItem() {
 
     // TODO
+    if(!verifyResources()){
+        return;
+    }
+
+    EmployeeType employee = getEmployeeThatProduces(this->itemBuilt);
+    int salary = getEmployeeSalary(employee);
+
+    if(money < salary){
+        interface->consoleAppendText(uniqueId,"Factory don't have enough money to pay the employee");
+        return;
+    }
+
+    this->money -= salary;
+    for(auto ressource : this->resourcesNeeded){
+        this->stocks[ressource]--;
+    }
 
     //Temps simulant l'assemblage d'un objet.
     PcoThread::usleep((rand() % 100) * 100000);
 
     // TODO
+    this->stocks[this->itemBuilt]++;
 
     interface->consoleAppendText(uniqueId, "Factory have build a new object");
 }
@@ -60,6 +77,15 @@ void Factory::buildItem() {
 void Factory::orderResources() {
 
     // TODO - Itérer sur les resourcesNeeded et les wholesalers disponibles
+    for(auto resource : this->resourcesNeeded){
+        for(auto seller : this->wholesalers){
+            if(seller->getItemsForSale()[resource] != 0){
+                interface->consoleAppendText(uniqueId,"I would like to buy 5 " + getItemName(resource) );
+                this ->money -= seller->trade(resource,5);
+                this->stocks[resource] += 5;
+            }
+        }
+    }
 
     //Temps de pause pour éviter trop de demande
     PcoThread::usleep(10 * 100000);

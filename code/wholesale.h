@@ -3,6 +3,7 @@
 #include "seller.h"
 #include <vector>
 #include "windowinterface.h"
+#include <pcosynchro/pcomutex.h>
 
 /**
  * @brief La classe permet l'implémentation d'un grossiste et de ces fonctions
@@ -15,6 +16,8 @@ private:
     std::vector<Seller*> sellers;
 
     static WindowInterface* interface;
+
+    PcoMutex mutex;
 
     /**
      * @brief Fonction permettant d'acheter des ressources à des usines ou des mines
@@ -34,6 +37,8 @@ public:
 
     std::map<ItemType, int> getItemsForSale() override;
     int trade(ItemType it, int qty) override;
+
+
 
     /**
      * @brief Fonction permettant de lier des vendeurs

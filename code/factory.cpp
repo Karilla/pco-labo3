@@ -4,6 +4,7 @@
 #include "wholesale.h"
 #include <pcosynchro/pcothread.h>
 #include <iostream>
+#include <pcosynchro/pcologger.h>
 
 WindowInterface* Factory::interface = nullptr;
 
@@ -48,7 +49,9 @@ bool Factory::verifyResources() {
 void Factory::buildItem() {
 
     // TODO
+    mutex.lock();
     if(!verifyResources()){
+        mutex.unlock();
         return;
     }
 
@@ -57,6 +60,7 @@ void Factory::buildItem() {
 
     if(money < salary){
         interface->consoleAppendText(uniqueId,"Factory don't have enough money to pay the employee");
+        mutex.unlock();
         return;
     }
 
@@ -70,8 +74,9 @@ void Factory::buildItem() {
 
     // TODO
     this->stocks[this->itemBuilt]++;
-
+  mutex.unlock();
     interface->consoleAppendText(uniqueId, "Factory have build a new object");
+
 }
 
 void Factory::orderResources() {
@@ -79,11 +84,17 @@ void Factory::orderResources() {
     // TODO - Itérer sur les resourcesNeeded et les wholesalers disponibles
     for(auto resource : this->resourcesNeeded){
         for(auto seller : this->wholesalers){
+            mutex.lock();
             if(seller->getItemsForSale()[resource] != 0){
-                interface->consoleAppendText(uniqueId,"I would like to buy 5 " + getItemName(resource) );
-                this ->money -= seller->trade(resource,5);
-                this->stocks[resource] += 5;
+                interface->consoleAppendText(uniqueId,"I would like to buy 1 " + getItemName(resource) );
+                int price = seller->trade(resource,1);
+                if(price){
+                    this ->money -= price;
+                    this->stocks[resource] += 1;
+                 }
+
             }
+            mutex.unlock();
         }
     }
 
@@ -93,6 +104,7 @@ void Factory::orderResources() {
 }
 
 void Factory::run() {
+
     if (wholesalers.empty()) {
         std::cerr << "You have to give to factories wholesalers to sales their resources" << std::endl;
         return;
@@ -100,6 +112,8 @@ void Factory::run() {
     interface->consoleAppendText(uniqueId, "[START] Factory routine");
 
     while (!PcoThread::thisThread()->stopRequested() /* TODO terminaison*/) {
+        interface->consoleAppendText(uniqueId, "Run");
+
         if (verifyResources()) {
             buildItem();
         } else {
@@ -117,14 +131,18 @@ std::map<ItemType, int> Factory::getItemsForSale() {
 
 int Factory::trade(ItemType it, int qty) {
     // TODO
+  interface->consoleAppendText(uniqueId, "Un grossisste veut acheter des trucs");
+  mutex.lock();
     if(this->getItemsForSale()[it] < qty or
        qty < 0 or
        this->getItemsForSale().find(it) == this->getItemsForSale().end()){
+        mutex.unlock();
         return 0;
     }
     int price = getCostPerUnit(it) * qty;
     this->money += price;
     this->getItemsForSale()[it] -= qty;
+    mutex.unlock();
     return price;
 }
 

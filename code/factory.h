@@ -3,6 +3,7 @@
 #include <vector>
 #include "windowinterface.h"
 #include "seller.h"
+#include <pcosynchro/pcomutex.h>
 
 class Wholesale;
 
@@ -61,6 +62,8 @@ private:
     const ItemType itemBuilt;
     // Compte le nombre d'employé payé
     int nbBuild;
+    // Mutex de protection de l'argent
+    PcoMutex mutex;
 
     static WindowInterface* interface;
 

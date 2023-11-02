@@ -3,6 +3,7 @@
 #include "costs.h"
 #include <iostream>
 #include <pcosynchro/pcothread.h>
+#include <pcosynchro/pcologger.h>
 
 WindowInterface* Wholesale::interface = nullptr;
 
@@ -38,14 +39,19 @@ void Wholesale::buyResources() {
     interface->consoleAppendText(uniqueId, QString("I would like to buy %1 of ").arg(qty) %
                                  getItemName(item) % QString(" which would cost me %1").arg(price));
     /* TODO */
+    logger() << "Lock Id " << this->uniqueId  << std::endl;
+    mutex.lock();
     if(this->getFund() < price){
        interface->consoleAppendText(uniqueId, QString("I cant buy these item i dont have enough money"));
+       logger() << "Unlock Id " << this->uniqueId  << std::endl;
+       mutex.unlock();
        return;
     }
      if(seller->trade(item, qty) != 0){
         this->stocks[item] += qty;
          this->money -= price;
      }
+     mutex.unlock();
 }
 
 void Wholesale::run() {
@@ -73,16 +79,19 @@ std::map<ItemType, int> Wholesale::getItemsForSale() {
 }
 
 int Wholesale::trade(ItemType it, int qty) {
-
+  interface->consoleAppendText(uniqueId, "Une factory veut acheter des trucs");
     // TODO
+  mutex.lock();
     if(this->getItemsForSale()[it] < qty or
        qty < 0 or
        this->getItemsForSale().find(it) == this->getItemsForSale().end()){
+        mutex.unlock();
         return 0;
     }
     int price = getCostPerUnit(it) * qty;
     this->money += price;
     this->getItemsForSale()[it] -= qty;
+    mutex.unlock();
     return price;
 }
 

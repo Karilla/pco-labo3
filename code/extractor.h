@@ -4,6 +4,7 @@
 #include "windowinterface.h"
 #include "costs.h"
 #include "seller.h"
+#include <pcosynchro/pcomutex.h>
 
 /**
  * @brief La classe offrant l'implémentation d'une mine et ces fonctions de ventes.
@@ -46,6 +47,10 @@ private:
     const ItemType resourceExtracted;
     // Compte le nombre d'employé payé
     int nbExtracted;
+    // Mutex de protection de l'argent
+    PcoMutex mutexMoney;
+    // Mutex de protection des stocks
+    PcoMutex mutexStock;
 
     static WindowInterface* interface;
 };

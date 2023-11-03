@@ -3,7 +3,6 @@
 #include "costs.h"
 #include <iostream>
 #include <pcosynchro/pcothread.h>
-#include <pcosynchro/pcologger.h>
 
 WindowInterface* Wholesale::interface = nullptr;
 
@@ -13,6 +12,10 @@ Wholesale::Wholesale(int uniqueId, int fund)
     interface->updateFund(uniqueId, fund);
     interface->consoleAppendText(uniqueId, "Wholesaler Created");
 
+}
+
+int Wholesale::getSellerId(){
+    return sellerId;
 }
 
 void Wholesale::setSellers(std::vector<Seller*> sellers) {
@@ -39,19 +42,21 @@ void Wholesale::buyResources() {
     interface->consoleAppendText(uniqueId, QString("I would like to buy %1 of ").arg(qty) %
                                  getItemName(item) % QString(" which would cost me %1").arg(price));
     /* TODO */
-    logger() << "Lock Id " << this->uniqueId  << std::endl;
     mutex.lock();
     if(this->getFund() < price){
-       interface->consoleAppendText(uniqueId, QString("I cant buy these item i dont have enough money"));
-       logger() << "Unlock Id " << this->uniqueId  << std::endl;
        mutex.unlock();
+       interface->consoleAppendText(uniqueId, QString("I cant buy these items I dont have enough money"));
        return;
     }
-     if(seller->trade(item, qty) != 0){
-        this->stocks[item] += qty;
-         this->money -= price;
+     if(seller->trade(item, qty) == 0){
+        mutex.unlock();
+        interface->consoleAppendText(uniqueId, QString("The seller doesn't have enough stock"));
+        return;
      }
+     stocks[item] += qty;
+     money -= price;
      mutex.unlock();
+     interface->consoleAppendText(uniqueId, QString("I cant buy these items I dont have enough money"));
 }
 
 void Wholesale::run() {
@@ -79,18 +84,17 @@ std::map<ItemType, int> Wholesale::getItemsForSale() {
 }
 
 int Wholesale::trade(ItemType it, int qty) {
-  interface->consoleAppendText(uniqueId, "Une factory veut acheter des trucs");
     // TODO
-  mutex.lock();
-    if(this->getItemsForSale()[it] < qty or
-       qty < 0 or
-       this->getItemsForSale().find(it) == this->getItemsForSale().end()){
+    mutex.lock();
+    if(getItemsForSale()[it] < qty or
+        qty <= 0 or
+        getItemsForSale().find(it) == getItemsForSale().end()){
         mutex.unlock();
         return 0;
     }
     int price = getCostPerUnit(it) * qty;
-    this->money += price;
-    this->getItemsForSale()[it] -= qty;
+    money += price;
+    getItemsForSale()[it] -= qty;
     mutex.unlock();
     return price;
 }

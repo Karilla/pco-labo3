@@ -17,18 +17,26 @@ private:
 
     static WindowInterface* interface;
 
+    // Mutex pour protéger les ressources partagées
     PcoMutex mutex;
+
+    // UniqueId of the seller the wholesale is trying to buy from
+    int sellerId;
 
     /**
      * @brief Fonction permettant d'acheter des ressources à des usines ou des mines
      */
     void buyResources();
 public:
+
+
     /**
      * @brief Constructeur de grossiste
      * @param Fond du grossiste à sa création
      */
     Wholesale(int uniqueId, int fund);
+
+    int getSellerId();
 
     /**
      * @brief Routine d'exécution du grossiste

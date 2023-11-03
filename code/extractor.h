@@ -47,10 +47,8 @@ private:
     const ItemType resourceExtracted;
     // Compte le nombre d'employé payé
     int nbExtracted;
-    // Mutex de protection de l'argent
-    PcoMutex mutexMoney;
-    // Mutex de protection des stocks
-    PcoMutex mutexStock;
+    // Mutex de protection de l'argent et du stock
+    PcoMutex mutex;
 
     static WindowInterface* interface;
 };

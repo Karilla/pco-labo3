@@ -34,7 +34,7 @@ int Extractor::trade(ItemType it, int qty) {
     mutex.lock();
     if(getItemsForSale()[it] < qty or
         qty <= 0 or
-        getItemsForSale().find(it) == getItemsForSale().end()){
+        it != resourceExtracted){
         mutex.unlock();
         return 0;
     }
@@ -63,12 +63,16 @@ void Extractor::run() {
 
         /* On peut payer un mineur */
         money -= minerCost;
+        mutex.unlock();
         /* Temps aléatoire borné qui simule le mineur qui mine */
         PcoThread::usleep((rand() % 100 + 1) * 10000);
+
         /* Statistiques */
         nbExtracted++;
+        mutex.lock();
         /* Incrément des stocks */
         stocks[resourceExtracted] += 1;
+
 
         /* Message dans l'interface graphique */
         interface->consoleAppendText(uniqueId, QString("1 ") % getItemName(resourceExtracted) %

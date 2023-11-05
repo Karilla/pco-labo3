@@ -68,14 +68,15 @@ void Factory::buildItem() {
         //mutexBuying.unlock();
         return;
     }
-
     money -= builderCost;
     for(ItemType ressource : resourcesNeeded){
         stocks[ressource]--;
     }
+    mutex.unlock();
 
     //Temps simulant l'assemblage d'un objet.
     PcoThread::usleep((rand() % 100) * 100000);
+    mutex.lock();
 
     // TODO
     stocks[itemBuilt]++;
@@ -89,6 +90,7 @@ void Factory::orderResources() {
 
     // TODO - Itérer sur les resourcesNeeded et les wholesalers disponibles
 
+
     for(ItemType resource : resourcesNeeded){
         // On achète en priorité la ressource qu'on n'a plus en stock
         if(stocks[resource]){
@@ -100,27 +102,29 @@ void Factory::orderResources() {
 
             interface->consoleAppendText(uniqueId, QString("I would like to buy 1 " + getItemName(resource)));
 
-            mutex.lock();
+            //mutex.lock();
             //mutexBuying.lock();
             if(money < price){
                 interface->consoleAppendText(uniqueId, QString("I dont have enough money to buy this item"));
-                mutex.unlock();
+                //mutex.unlock();
                 //mutexBuying.unlock();
                 continue;
             }
 
             if(wholesale->trade(resource,1) == 0){
-                mutex.unlock();
+                //mutex.unlock();
                 //mutexBuying.unlock();
                 interface->consoleAppendText(uniqueId, QString("The seller doesn't have enough stock"));
                 continue;
             }
 
+            mutex.lock();
             money -= price;
             stocks[resource]++;
+            mutex.unlock();
 
             // On a réussi à acheter la ressource
-            mutex.unlock();
+            //mutex.unlock();
             //mutexBuying.unlock();
             interface->consoleAppendText(uniqueId, QString("Success"));
             break;

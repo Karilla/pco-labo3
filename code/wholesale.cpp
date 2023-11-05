@@ -55,6 +55,7 @@ void Wholesale::buyResources() {
     //mutex.lock();
     //mutexBuying.lock();
 
+
     if(money < price){
        //mutex.unlock();
        //mutexBuying.unlock();

@@ -1,3 +1,12 @@
+/**
+\file factory.h
+\author Eva Ray, Benoit Delay
+\date 04.11.2023
+
+
+Ce fichier contient la définition de la classe Factory, qui permet
+l'implémentation d'une usine et de ses fonctions de ventes et d'achats.
+*/
 #ifndef FACTORY_H
 #define FACTORY_H
 #include <vector>
@@ -64,6 +73,8 @@ private:
     int nbBuild;
     // Mutex pour protéger les ressources partagées
     PcoMutex mutex;
+    PcoMutex mutexBuying;
+    PcoMutex mutexTrading;
 
     static WindowInterface* interface;
 

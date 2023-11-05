@@ -1,3 +1,12 @@
+/**
+\file wholesale.h
+\author Eva Ray, Benoit Delay
+\date 04.11.2023
+
+
+Ce fichier contient la définition de la classe Wholesale, qui permet
+l'implémentation d'un grossiste et de ses fonctions de ventes et d'achats.
+*/
 #ifndef WHOLESALE_H
 #define WHOLESALE_H
 #include "seller.h"
@@ -19,6 +28,8 @@ private:
 
     // Mutex pour protéger les ressources partagées
     PcoMutex mutex;
+    PcoMutex mutexBuying;
+    PcoMutex mutexTrading;
 
     // UniqueId of the seller the wholesale is trying to buy from
     int sellerId;

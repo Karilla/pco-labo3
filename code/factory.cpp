@@ -1,3 +1,12 @@
+/**
+\file factory.cpp
+\author Eva Ray, Benoit Delay
+\date 04.11.2023
+
+
+Ce fichier contient l'implémentation de la classe Factory, qui permet
+l'implémentation d'une usine et de ses fonctions de ventes et d'achats.
+*/
 #include "factory.h"
 #include "extractor.h"
 #include "costs.h"
@@ -49,18 +58,14 @@ bool Factory::verifyResources() {
 void Factory::buildItem() {
 
     // TODO
-    mutex.lock();
-    // Si on n'a pas les ressources nécessaires, on ne peut pas constuire
-    if(!verifyResources()){
-        mutex.unlock();
-        interface->consoleAppendText(uniqueId,"I don't have enough ressource to build the item");
-        return;
-    }
-
     int builderCost = getEmployeeSalary(getEmployeeThatProduces(itemBuilt));
+
+    //mutex.lock();
+    mutexBuying.lock();
     if(money < builderCost){
         interface->consoleAppendText(uniqueId,"I don't have enough money to pay the employee");
-        mutex.unlock();
+        //mutex.unlock();
+        mutexBuying.unlock();
         return;
     }
 
@@ -74,7 +79,8 @@ void Factory::buildItem() {
 
     // TODO
     stocks[itemBuilt]++;
-    mutex.unlock();
+    //mutex.unlock();
+    mutexBuying.unlock();
     interface->consoleAppendText(uniqueId, "I built a new item");
 
 }
@@ -83,29 +89,43 @@ void Factory::orderResources() {
 
     // TODO - Itérer sur les resourcesNeeded et les wholesalers disponibles
 
-    mutex.lock();
     for(ItemType resource : resourcesNeeded){
         // On achète en priorité la ressource qu'on n'a plus en stock
         if(stocks[resource]){
             continue;
         }
-        for(auto seller : wholesalers){
+        int price = getCostPerUnit(resource);
+
+        for(auto wholesale : wholesalers){
 
             interface->consoleAppendText(uniqueId, QString("I would like to buy 1 " + getItemName(resource)));
-            int price = seller->trade(resource,1);
 
-            if(price){
-                money -= price;
-                stocks[resource] += 1;
-                interface->consoleAppendText(uniqueId, QString("Success"));
-            } else{
-                interface->consoleAppendText(uniqueId, QString("Fail"));
+            //mutex.lock();
+            mutexBuying.lock();
+            if(money < price){
+                interface->consoleAppendText(uniqueId, QString("I dont have enough money to buy this item"));
+                //mutex.unlock();
+                mutexBuying.unlock();
+                continue;
             }
 
+            if(wholesale->trade(resource,1) == 0){
+                //mutex.unlock();
+                mutexBuying.unlock();
+                interface->consoleAppendText(uniqueId, QString("The seller doesn't have enough stock"));
+                continue;
+            }
+
+            money -= price;
+            stocks[resource]++;
+
+            // On a réussi à acheter la ressource
+            //mutex.unlock();
+            mutexBuying.unlock();
+            interface->consoleAppendText(uniqueId, QString("Success"));
+            break;
         }
     }    
-
-    mutex.unlock();
 
     //Temps de pause pour éviter trop de demande
     PcoThread::usleep(10 * 100000);
@@ -140,17 +160,20 @@ std::map<ItemType, int> Factory::getItemsForSale() {
 
 int Factory::trade(ItemType it, int qty) {
     // TODO
-    mutex.lock();
-    if(this->getItemsForSale()[it] < qty or
+    //mutex.lock();
+    mutexTrading.lock();
+    if(getItemsForSale()[it] < qty or
        qty <= 0 or
-       this->getItemsForSale().find(it) == this->getItemsForSale().end()){
-        mutex.unlock();
+       getItemsForSale().find(it) == getItemsForSale().end()){
+        //mutex.unlock();
+        mutexTrading.unlock();
         return 0;
     }
     int price = getCostPerUnit(it) * qty;
     money += price;
-    getItemsForSale()[it] -= qty;
-    mutex.unlock();
+    stocks[it] -= qty;
+    //mutex.unlock();
+    mutexTrading.unlock();
     return price;
 }
 

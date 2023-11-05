@@ -1,3 +1,12 @@
+/**
+\file wholesale.h
+\author Eva Ray, Benoit Delay
+\date 04.11.2023
+
+
+Ce fichier contient l'implémentation de la classe Wholesale, qui permet
+l'implémentation d'un grossiste et de ses fonctions de ventes et d'achats.
+*/
 #include "wholesale.h"
 #include "factory.h"
 #include "costs.h"
@@ -42,20 +51,30 @@ void Wholesale::buyResources() {
     interface->consoleAppendText(uniqueId, QString("I would like to buy %1 of ").arg(qty) %
                                  getItemName(item) % QString(" which would cost me %1").arg(price));
     /* TODO */
-    mutex.lock();
-    if(this->getFund() < price){
-       mutex.unlock();
+
+    //mutex.lock();
+    mutexBuying.lock();
+
+    if(money < price){
+       //mutex.unlock();
+        mutexBuying.unlock();
        interface->consoleAppendText(uniqueId, QString("I cant buy these items I dont have enough money"));
        return;
     }
+
      if(seller->trade(item, qty) == 0){
-        mutex.unlock();
+        //mutex.unlock();
+        mutexBuying.unlock();
         interface->consoleAppendText(uniqueId, QString("The seller doesn't have enough stock"));
         return;
      }
+
+
      stocks[item] += qty;
      money -= price;
-     mutex.unlock();
+     //mutex.unlock();
+
+     mutexBuying.unlock();
      interface->consoleAppendText(uniqueId, QString("I cant buy these items I dont have enough money"));
 }
 
@@ -85,17 +104,20 @@ std::map<ItemType, int> Wholesale::getItemsForSale() {
 
 int Wholesale::trade(ItemType it, int qty) {
     // TODO
-    mutex.lock();
+    //mutex.lock();
+    mutexTrading.lock();
     if(getItemsForSale()[it] < qty or
         qty <= 0 or
         getItemsForSale().find(it) == getItemsForSale().end()){
-        mutex.unlock();
+        //mutex.unlock();
+        mutexTrading.unlock();
         return 0;
     }
     int price = getCostPerUnit(it) * qty;
     money += price;
-    getItemsForSale()[it] -= qty;
-    mutex.unlock();
+    stocks[it] -= qty;
+    //mutex.unlock();
+    mutexTrading.unlock();
     return price;
 }
 

@@ -1,3 +1,12 @@
+/**
+\file extractor.h
+\author Eva Ray, Benoit Delay
+\date 04.11.2023
+
+
+Ce fichier contient l'implémentation de la classe Extractor, qui permet
+l'implémentation d'une mine et de ses fonctions de ventes.
+*/
 #include "extractor.h"
 #include "costs.h"
 #include <pcosynchro/pcothread.h>
@@ -29,9 +38,9 @@ int Extractor::trade(ItemType it, int qty) {
         mutex.unlock();
         return 0;
     }
-    int price = getCostPerUnit(it) * qty;
+    int price = getMaterialCost() * qty;
     money += price;
-    getItemsForSale()[it] -= qty;
+    stocks[it] -= qty;
     mutex.unlock();
     return price;
 }

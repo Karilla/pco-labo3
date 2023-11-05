@@ -1,3 +1,12 @@
+/**
+\file extractor.h
+\author Eva Ray, Benoit Delay
+\date 04.11.2023
+
+
+Ce fichier contient la définition de la classe Extractor, qui permet
+l'implémentation d'une mine et de ses fonctions de ventes.
+*/
 #ifndef EXTRACTOR_H
 #define EXTRACTOR_H
 #include <QTimer>

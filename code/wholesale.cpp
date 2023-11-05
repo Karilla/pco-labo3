@@ -53,28 +53,28 @@ void Wholesale::buyResources() {
     /* TODO */
 
     //mutex.lock();
-    mutexBuying.lock();
+    //mutexBuying.lock();
 
     if(money < price){
        //mutex.unlock();
-        mutexBuying.unlock();
+       //mutexBuying.unlock();
        interface->consoleAppendText(uniqueId, QString("I cant buy these items I dont have enough money"));
        return;
     }
 
      if(seller->trade(item, qty) == 0){
         //mutex.unlock();
-        mutexBuying.unlock();
+        //mutexBuying.unlock();
         interface->consoleAppendText(uniqueId, QString("The seller doesn't have enough stock"));
         return;
      }
 
-
+     mutex.lock();
      stocks[item] += qty;
      money -= price;
-     //mutex.unlock();
+     mutex.unlock();
 
-     mutexBuying.unlock();
+     //mutexBuying.unlock();
      interface->consoleAppendText(uniqueId, QString("I cant buy these items I dont have enough money"));
 }
 
@@ -104,20 +104,20 @@ std::map<ItemType, int> Wholesale::getItemsForSale() {
 
 int Wholesale::trade(ItemType it, int qty) {
     // TODO
-    //mutex.lock();
-    mutexTrading.lock();
+    mutex.lock();
+    //mutexTrading.lock();
     if(getItemsForSale()[it] < qty or
         qty <= 0 or
         getItemsForSale().find(it) == getItemsForSale().end()){
-        //mutex.unlock();
-        mutexTrading.unlock();
+        mutex.unlock();
+        //mutexTrading.unlock();
         return 0;
     }
     int price = getCostPerUnit(it) * qty;
     money += price;
     stocks[it] -= qty;
-    //mutex.unlock();
-    mutexTrading.unlock();
+    mutex.unlock();
+    //mutexTrading.unlock();
     return price;
 }
 

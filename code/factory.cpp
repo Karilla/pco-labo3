@@ -60,12 +60,12 @@ void Factory::buildItem() {
     // TODO
     int builderCost = getEmployeeSalary(getEmployeeThatProduces(itemBuilt));
 
-    //mutex.lock();
-    mutexBuying.lock();
+    mutex.lock();
+    //mutexBuying.lock();
     if(money < builderCost){
         interface->consoleAppendText(uniqueId,"I don't have enough money to pay the employee");
-        //mutex.unlock();
-        mutexBuying.unlock();
+        mutex.unlock();
+        //mutexBuying.unlock();
         return;
     }
 
@@ -79,8 +79,8 @@ void Factory::buildItem() {
 
     // TODO
     stocks[itemBuilt]++;
-    //mutex.unlock();
-    mutexBuying.unlock();
+    mutex.unlock();
+    //mutexBuying.unlock();
     interface->consoleAppendText(uniqueId, "I built a new item");
 
 }
@@ -100,18 +100,18 @@ void Factory::orderResources() {
 
             interface->consoleAppendText(uniqueId, QString("I would like to buy 1 " + getItemName(resource)));
 
-            //mutex.lock();
-            mutexBuying.lock();
+            mutex.lock();
+            //mutexBuying.lock();
             if(money < price){
                 interface->consoleAppendText(uniqueId, QString("I dont have enough money to buy this item"));
-                //mutex.unlock();
-                mutexBuying.unlock();
+                mutex.unlock();
+                //mutexBuying.unlock();
                 continue;
             }
 
             if(wholesale->trade(resource,1) == 0){
-                //mutex.unlock();
-                mutexBuying.unlock();
+                mutex.unlock();
+                //mutexBuying.unlock();
                 interface->consoleAppendText(uniqueId, QString("The seller doesn't have enough stock"));
                 continue;
             }
@@ -120,8 +120,8 @@ void Factory::orderResources() {
             stocks[resource]++;
 
             // On a réussi à acheter la ressource
-            //mutex.unlock();
-            mutexBuying.unlock();
+            mutex.unlock();
+            //mutexBuying.unlock();
             interface->consoleAppendText(uniqueId, QString("Success"));
             break;
         }
@@ -160,20 +160,20 @@ std::map<ItemType, int> Factory::getItemsForSale() {
 
 int Factory::trade(ItemType it, int qty) {
     // TODO
-    //mutex.lock();
-    mutexTrading.lock();
+    mutex.lock();
+    //mutexTrading.lock();
     if(getItemsForSale()[it] < qty or
        qty <= 0 or
        getItemsForSale().find(it) == getItemsForSale().end()){
-        //mutex.unlock();
-        mutexTrading.unlock();
+        mutex.unlock();
+        //mutexTrading.unlock();
         return 0;
     }
     int price = getCostPerUnit(it) * qty;
     money += price;
     stocks[it] -= qty;
-    //mutex.unlock();
-    mutexTrading.unlock();
+    mutex.unlock();
+    //mutexTrading.unlock();
     return price;
 }
 

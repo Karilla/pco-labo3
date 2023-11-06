@@ -57,7 +57,6 @@ bool Factory::verifyResources() {
 
 void Factory::buildItem() {
 
-    // TODO
     int builderCost = getEmployeeSalary(getEmployeeThatProduces(itemBuilt));
 
     mutex.lock();
@@ -69,7 +68,7 @@ void Factory::buildItem() {
     }
 
 
-    // Mise à jour du stock et paiement de l'employé
+    // Paiement de l'employé et mise à jour du stock
     money -= builderCost;
 
     for(ItemType ressource : resourcesNeeded){
@@ -81,7 +80,6 @@ void Factory::buildItem() {
     PcoThread::usleep((rand() % 100) * 100000);
     mutex.lock();
 
-    // TODO
     stocks[itemBuilt]++;
     nbBuild++;
     mutex.unlock();
@@ -91,21 +89,14 @@ void Factory::buildItem() {
 
 void Factory::orderResources() {
 
-    // TODO - Itérer sur les resourcesNeeded et les wholesalers disponibles
-
-
     for(ItemType resource : resourcesNeeded){
 
         int price = getCostPerUnit(resource);
 
-        mutex.lock();
-
-        // On achète en priorité la ressource qu'on n'a plus en stock
+        // On achète en priorité les ressources qu'on n'a plus en stock
         if(stocks[resource]){
-            mutex.unlock();
             continue;
         }
-
 
         for(auto wholesale : wholesalers){
 
@@ -118,14 +109,15 @@ void Factory::orderResources() {
                 continue;
             }
 
+            mutex.lock();
             money -= price;
             stocks[resource]++;
+            mutex.unlock();
 
             // On a réussi à acheter la ressource
             interface->consoleAppendText(uniqueId, QString("The order has been processed"));
             break;
         }
-        mutex.unlock();
     }    
 
     //Temps de pause pour éviter trop de demande
@@ -141,7 +133,7 @@ void Factory::run() {
     }
     interface->consoleAppendText(uniqueId, "[START] Factory routine");
 
-    while (!PcoThread::thisThread()->stopRequested() /* TODO terminaison*/) {
+    while (!PcoThread::thisThread()->stopRequested()) {
         interface->consoleAppendText(uniqueId, "Run");
 
         if (verifyResources()) {
@@ -160,21 +152,21 @@ std::map<ItemType, int> Factory::getItemsForSale() {
 }
 
 int Factory::trade(ItemType it, int qty) {
-    // TODO
 
-     if (it != getItemBuilt()){
+     if (it != itemBuilt or qty <= 0){
          return 0;
      }
 
+    int price = getMaterialCost() * qty;
+
     mutex.lock();
 
-    if(stocks[it] < qty or qty <= 0)
+    if(stocks[it] < qty)
     {
         mutex.unlock();
         return 0;
     }
 
-    int price = getMaterialCost() * qty;
     money += price;
     stocks[it] -= qty;
     mutex.unlock();

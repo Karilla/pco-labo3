@@ -1,5 +1,5 @@
 /**
-\file wholesale.h
+\file wholesale.cpp
 \author Eva Ray, Benoit Delay
 \date 04.11.2023
 
@@ -46,10 +46,8 @@ void Wholesale::buyResources() {
 
     interface->consoleAppendText(uniqueId, QString("I would like to buy %1 of ").arg(qty) %
                                  getItemName(item) % QString(" which would cost me %1").arg(price));
-    /* TODO */
 
     mutex.lock();
-
 
     if(money < price or seller->trade(item, qty) == 0){
        mutex.unlock();
@@ -57,7 +55,6 @@ void Wholesale::buyResources() {
        return;
     }
 
-     //mutex.lock();
      stocks[item] += qty;
      money -= price;
      mutex.unlock();
@@ -90,11 +87,12 @@ std::map<ItemType, int> Wholesale::getItemsForSale() {
 }
 
 int Wholesale::trade(ItemType it, int qty) {
-    // TODO
 
     if(qty <= 0){
         return 0;
     }
+
+    int price = getCostPerUnit(it) * qty;
 
     mutex.lock();
 
@@ -104,7 +102,6 @@ int Wholesale::trade(ItemType it, int qty) {
         return 0;
     }
 
-    int price = getCostPerUnit(it) * qty;
     money += price;
     stocks[it] -= qty;
     mutex.unlock();

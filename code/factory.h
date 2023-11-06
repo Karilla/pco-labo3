@@ -73,8 +73,7 @@ private:
     int nbBuild;
     // Mutex pour protéger les ressources partagées
     PcoMutex mutex;
-    PcoMutex mutexBuying;
-    PcoMutex mutexTrading;
+
 
     static WindowInterface* interface;
 

@@ -28,11 +28,6 @@ private:
 
     // Mutex pour protéger les ressources partagées
     PcoMutex mutex;
-    PcoMutex mutexBuying;
-    PcoMutex mutexTrading;
-
-    // UniqueId of the seller the wholesale is trying to buy from
-    int sellerId;
 
     /**
      * @brief Fonction permettant d'acheter des ressources à des usines ou des mines
@@ -46,8 +41,6 @@ public:
      * @param Fond du grossiste à sa création
      */
     Wholesale(int uniqueId, int fund);
-
-    int getSellerId();
 
     /**
      * @brief Routine d'exécution du grossiste

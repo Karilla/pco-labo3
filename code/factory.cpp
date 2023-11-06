@@ -61,27 +61,30 @@ void Factory::buildItem() {
     int builderCost = getEmployeeSalary(getEmployeeThatProduces(itemBuilt));
 
     mutex.lock();
-    //mutexBuying.lock();
+
     if(money < builderCost){
         interface->consoleAppendText(uniqueId,"I don't have enough money to pay the employee");
         mutex.unlock();
-        //mutexBuying.unlock();
         return;
     }
+
+
+    // Mise à jour du stock et paiement de l'employé
     money -= builderCost;
+
     for(ItemType ressource : resourcesNeeded){
         stocks[ressource]--;
     }
-    mutex.unlock();
 
+    mutex.unlock();
     //Temps simulant l'assemblage d'un objet.
     PcoThread::usleep((rand() % 100) * 100000);
     mutex.lock();
 
     // TODO
     stocks[itemBuilt]++;
+    nbBuild++;
     mutex.unlock();
-    //mutexBuying.unlock();
     interface->consoleAppendText(uniqueId, "I built a new item");
 
 }
@@ -92,43 +95,37 @@ void Factory::orderResources() {
 
 
     for(ItemType resource : resourcesNeeded){
+
+        int price = getCostPerUnit(resource);
+
+        mutex.lock();
+
         // On achète en priorité la ressource qu'on n'a plus en stock
         if(stocks[resource]){
+            mutex.unlock();
             continue;
         }
-        int price = getCostPerUnit(resource);
+
 
         for(auto wholesale : wholesalers){
 
             interface->consoleAppendText(uniqueId, QString("I would like to buy 1 " + getItemName(resource)));
 
-            //mutex.lock();
-            //mutexBuying.lock();
-            if(money < price){
-                interface->consoleAppendText(uniqueId, QString("I dont have enough money to buy this item"));
-                //mutex.unlock();
-                //mutexBuying.unlock();
+
+            if(money < price or wholesale->trade(resource,1) == 0){
+
+                interface->consoleAppendText(uniqueId, QString("The order cannot be processed"));
                 continue;
             }
 
-            if(wholesale->trade(resource,1) == 0){
-                //mutex.unlock();
-                //mutexBuying.unlock();
-                interface->consoleAppendText(uniqueId, QString("The seller doesn't have enough stock"));
-                continue;
-            }
-
-            mutex.lock();
             money -= price;
             stocks[resource]++;
-            mutex.unlock();
 
             // On a réussi à acheter la ressource
-            //mutex.unlock();
-            //mutexBuying.unlock();
-            interface->consoleAppendText(uniqueId, QString("Success"));
+            interface->consoleAppendText(uniqueId, QString("The order has been processed"));
             break;
         }
+        mutex.unlock();
     }    
 
     //Temps de pause pour éviter trop de demande
@@ -164,20 +161,24 @@ std::map<ItemType, int> Factory::getItemsForSale() {
 
 int Factory::trade(ItemType it, int qty) {
     // TODO
+
+     if (it != getItemBuilt()){
+         return 0;
+     }
+
     mutex.lock();
-    //mutexTrading.lock();
-    if(getItemsForSale()[it] < qty or
-       qty <= 0 or
-       getItemsForSale().find(it) == getItemsForSale().end()){
+
+    if(stocks[it] < qty or qty <= 0)
+    {
         mutex.unlock();
-        //mutexTrading.unlock();
         return 0;
     }
-    int price = getCostPerUnit(it) * qty;
+
+    int price = getMaterialCost() * qty;
     money += price;
     stocks[it] -= qty;
     mutex.unlock();
-    //mutexTrading.unlock();
+
     return price;
 }
 

@@ -1,5 +1,5 @@
 /**
-\file extractor.h
+\file extractor.cpp
 \author Eva Ray, Benoit Delay
 \date 04.11.2023
 
@@ -31,17 +31,23 @@ std::map<ItemType, int> Extractor::getItemsForSale() {
 
 int Extractor::trade(ItemType it, int qty) {
     // TODO
+
+    if(it != resourceExtracted or qty <= 0){
+        return 0;
+    }
+
     mutex.lock();
-    if(getItemsForSale()[it] < qty or
-        qty <= 0 or
-        it != resourceExtracted){
+    if(stocks[it] < qty ){
+
         mutex.unlock();
         return 0;
     }
+
     int price = getMaterialCost() * qty;
     money += price;
     stocks[it] -= qty;
     mutex.unlock();
+
     return price;
 }
 

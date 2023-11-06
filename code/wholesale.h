@@ -26,9 +26,6 @@ private:
 
     static WindowInterface* interface;
 
-    // Mutex pour protéger les ressources partagées
-    PcoMutex mutex;
-
     /**
      * @brief Fonction permettant d'acheter des ressources à des usines ou des mines
      */

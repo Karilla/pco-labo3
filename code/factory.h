@@ -71,8 +71,6 @@ private:
     const ItemType itemBuilt;
     // Compte le nombre d'employé payé
     int nbBuild;
-    // Mutex pour protéger les ressources partagées
-    PcoMutex mutex;
 
 
     static WindowInterface* interface;

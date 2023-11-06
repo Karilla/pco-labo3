@@ -1,3 +1,13 @@
+/**
+\file wholesale.h
+\author Eva Ray, Benoit Delay
+\date 04.11.2023
+
+
+Ce fichier contient la définition de la classe abstraite Seller, dont les
+différents acteurs de la simulation vont hériter et qui permet
+l'implémentation de fonctions de ventes et d'achats.
+*/
 #ifndef SELLER_H
 #define SELLER_H
 
@@ -6,6 +16,7 @@
 #include <map>
 #include <vector>
 #include "costs.h"
+#include <pcosynchro/pcomutex.h>
 
 enum class ItemType { Sand, Copper, Petrol, Chip, Plastic, Robot, Nothing};
 
@@ -64,6 +75,8 @@ protected:
     std::map<ItemType, int> stocks;
     int money;
     int uniqueId;
+    // Mutex pour protéger les ressources partagées
+    PcoMutex mutex;
 };
 
 #endif // SELLER_H

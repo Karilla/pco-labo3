@@ -30,11 +30,12 @@ std::map<ItemType, int> Extractor::getItemsForSale() {
 }
 
 int Extractor::trade(ItemType it, int qty) {
-    // TODO
 
     if(it != resourceExtracted or qty <= 0){
         return 0;
     }
+
+    int price = getMaterialCost() * qty;
 
     mutex.lock();
     if(stocks[it] < qty ){
@@ -43,7 +44,6 @@ int Extractor::trade(ItemType it, int qty) {
         return 0;
     }
 
-    int price = getMaterialCost() * qty;
     money += price;
     stocks[it] -= qty;
     mutex.unlock();
@@ -54,8 +54,7 @@ int Extractor::trade(ItemType it, int qty) {
 void Extractor::run() {
     interface->consoleAppendText(uniqueId, "[START] Mine routine");
 
-    while (!PcoThread::thisThread()->stopRequested() /* TODO terminaison*/) {
-        /* TODO concurrence */
+    while (!PcoThread::thisThread()->stopRequested()) {
 
         int minerCost = getEmployeeSalary(getEmployeeThatProduces(resourceExtracted));
         mutex.lock();
@@ -63,7 +62,7 @@ void Extractor::run() {
             /* Pas assez d'argent */
             /* Attend des jours meilleurs */
             mutex.unlock();
-            PcoThread::usleep(1000U);     
+            PcoThread::usleep(1000U);
             continue;
         }
 
